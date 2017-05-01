@@ -14,7 +14,7 @@ before_install:
   - sudo apt-get -qq update
   
 install:
-  - sudo apt-get install -y cmake libboost-all-dev googletest
+  - sudo apt-get install -y cmake libboost-all-dev libgtest-dev
   
 before_script:
   - git clone https://github.com/Microsoft/GSL.git
