@@ -1,4 +1,4 @@
-# mothbus, a c++11 library of the modbus protocol
+# mothbus, a c++11 library for the modbus protocol
 
 ## Introduction
 
@@ -19,7 +19,7 @@ be ported to almost everything. As it is heavily influenced by boost::asio it wo
 
 ## Status
 
-The library is currently in a proof-of-concept state and while it maybe it already works, there are many
+The library is currently in a proof-of-concept state and while it maybe already works, there are many
 unaddressed issues and internal inconsistencies.
 
 ## Requirements
