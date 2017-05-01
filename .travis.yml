@@ -15,6 +15,11 @@ before_install:
   
 install:
   - sudo apt-get install -y cmake libboost-all-dev libgtest-dev
+  - cd /usr/src/gtest
+  - sudo cmake .
+  - sudo make
+  - sudo mv libgtest* /usr/lib/
+  - cd "${TRAVIS_BUILD_DIR}"
   
 before_script:
   - git clone https://github.com/Microsoft/GSL.git
