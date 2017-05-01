@@ -14,7 +14,7 @@ file(GLOB_RECURSE PROJ_SRC src/*.cpp)
 
 set(Boost_USE_STATIC_RUNTIME    OFF)
 set(Boost_USE_STATIC_LIBS        ON)
-find_package(Boost 1.63 REQUIRED COMPONENTS system)
+find_package(Boost 1.54 REQUIRED COMPONENTS system)
 
 if (MSVC)
     add_definitions (-DBOOST_ALL_NO_LIB) # disable autolinking
