@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.2)
 
 find_package(Boost 1.63 REQUIRED COMPONENTS system program_options)
 

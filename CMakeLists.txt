@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.8)
-PROJECT(mothbus)
+cmake_minimum_required(VERSION 3.2)
+PROJECT(mothbus CXX)
 
 
 if (MSVC)
@@ -23,11 +23,11 @@ endif()
 set(GSL_INCLUDE_DIRS "C:\\program files\\GSL\\include" CACHE PATH "Path to core guideline library")
 include_directories(include ${Boost_INCLUDE_DIRS} ${GSL_INCLUDE_DIRS})
 
-add_library(mothbus ${PROJ_SRC} ${PROJ_INCLUDES})
-target_include_directories(mothbus PUBLIC 
+add_library(mothbus INTERFACE)
+target_include_directories(mothbus INTERFACE 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
-target_link_libraries(mothbus ${Boost_LIBRARIES})
+target_link_libraries(mothbus INTERFACE ${Boost_LIBRARIES})
 
 add_subdirectory(test)
 
