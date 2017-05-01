@@ -23,8 +23,6 @@ before_script:
 script:
   - mkdir build
   - cd build
-  - cmake -DGSL_INCLUDE_DIRS=$GSL_PATH -D ..
+  - cmake -DGSL_INCLUDE_DIRS=$GSL_PATH ..
   - make
-
-after_script:
   - ctest .
