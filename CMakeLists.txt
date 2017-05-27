@@ -21,6 +21,8 @@ if (MSVC)
 endif()
 
 set(GSL_INCLUDE_DIRS "C:\\program files\\GSL\\include" CACHE PATH "Path to core guideline library")
+
+MESSAGE(STATUS ${GSL_INCLUDE_DIRS})
 include_directories(include ${Boost_INCLUDE_DIRS} ${GSL_INCLUDE_DIRS})
 
 add_library(mothbus INTERFACE)
