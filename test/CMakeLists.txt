@@ -6,7 +6,7 @@ enable_testing()
 file(GLOB PROJ_SRC *.cpp)
 
 find_package(GTest REQUIRED)
-
+include_directories(include ${GTEST_INCLUDE_DIRS})
 add_executable(mothtest ${PROJ_SRC})
 set(THREADING_LIB "")
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")

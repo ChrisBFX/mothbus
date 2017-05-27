@@ -24,7 +24,7 @@ namespace mothbus
 		template <class Writer>
 		void write(Writer& writer, const read_holding_pdu_req& v)
 		{
-			write(writer, v.function_code);
+			write(writer, v.fc);
 			writer.write(v.starting_address);
 			writer.write(v.quantity_of_registers);
 		}

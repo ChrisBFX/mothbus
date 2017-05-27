@@ -129,14 +129,14 @@ namespace mothbus
 		class not_implemented
 		{
 		public:
-			uint8_t function_code = 0;
+			uint8_t fc = 0;
 		};
 
 		template <function_code FunctionCode>
 		class pdu_base
 		{
 		public:
-			constexpr static function_code function_code = FunctionCode;
+			constexpr static function_code fc = FunctionCode;
 		};
 
 		using pdu_req = variant<read_holding_pdu_req, not_implemented>;
@@ -155,7 +155,7 @@ namespace mothbus
 			typename std::enable_if<!std::is_same<Head, not_implemented>::value, void>::type
 				read_pdu_variant(Reader& reader, pdu_req& resp, function_code functionCode)
 			{
-				if (Head::function_code == functionCode)
+				if (Head::fc == functionCode)
 				{
 					Head real{};
 					read(reader, real);
@@ -218,14 +218,14 @@ namespace mothbus
 		class pdu_exception_resp
 		{
 		public:
-			function_code function_code;
+			function_code fc;
 			modbus_exception_code exceptionCode;
 		};
 
 		template <class Writer>
 		void write(Writer& writer, const pdu_exception_resp& v)
 		{
-			uint8_t error_function_code = static_cast<uint8_t>(v.function_code);
+			uint8_t error_function_code = static_cast<uint8_t>(v.fc);
 			error_function_code |= 0x80;
 			write(writer, error_function_code);
 			write(writer, v.exceptionCode);
@@ -249,12 +249,12 @@ namespace mothbus
 			if (fC & 0x80)
 			{
 				pdu_exception_resp exc;
-				exc.function_code = static_cast<function_code>(fC & 0x7f);
+				exc.fc = static_cast<function_code>(fC & 0x7f);
 				read(reader, exc.exceptionCode);
 				throw modbus_exception(static_cast<int>(exc.exceptionCode));
 			}
 			function_code function_code_value = static_cast<function_code>(fC);
-			if (function_code_value != Response::function_code)
+			if (function_code_value != Response::fc)
 				throw modbus_exception(0x10);
 			read(reader, resp.resp);
 		}

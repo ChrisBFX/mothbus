@@ -19,8 +19,8 @@ install:
   - sudo make
   - sudo mv libgtest* /usr/lib/
   - cd $TRAVIS_BUILD_DIR
-  - git clone https://github.com/martinmoene/gsl-lite.git
-  - export GSL_PATH=$PWD/gsl-lite/include
+  - git clone https://github.com/viboes/GSL.git
+  - export GSL_PATH=$PWD/GSL/include
 
 script:
   - mkdir build
