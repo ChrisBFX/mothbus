@@ -5,7 +5,6 @@ os:
   -linux
   
 dist: trusty
-sudo: required
  
 compiler:
   - gcc
@@ -20,14 +19,13 @@ install:
   - sudo make
   - sudo mv libgtest* /usr/lib/
   - cd $TRAVIS_BUILD_DIR
-  
-before_script:
   - git clone https://github.com/Microsoft/GSL.git
   - export GSL_PATH=$PWD/gsl/include
 
 script:
   - mkdir build
   - cd build
+  - echo $GSL_PATH
   - cmake -DGSL_INCLUDE_DIRS=$GSL_PATH ..
   - make
   - ctest .
