@@ -26,6 +26,6 @@ script:
   - mkdir build
   - cd build
   - echo $GSL_PATH
-  - cmake -DGSL_INCLUDE_DIRS=$GSL_PATH ..
+  - cmake -DGSL_INCLUDE_DIRS:PATH=$GSL_PATH ..
   - make
   - ctest .
