@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <mothbus/mothbus.h>
-#include <mothbus/PDU.h>
+#include <mothbus/pdu.h>
 
 using namespace mothbus;
 
