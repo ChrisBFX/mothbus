@@ -4,10 +4,10 @@ sudo: required
 os:
   -linux
   
-dist: sid
+dist: trusty
+sudo: required
  
 compiler:
-  - clang
   - gcc
 
 before_install:
@@ -19,7 +19,7 @@ install:
   - sudo cmake .
   - sudo make
   - sudo mv libgtest* /usr/lib/
-  - cd "${TRAVIS_BUILD_DIR}"
+  - cd $TRAVIS_BUILD_DIR
   
 before_script:
   - git clone https://github.com/Microsoft/GSL.git
@@ -28,6 +28,6 @@ before_script:
 script:
   - mkdir build
   - cd build
-  - cmake -DGSL_INCLUDE_DIRS=${GSL_PATH} ..
+  - cmake -DGSL_INCLUDE_DIRS=$GSL_PATH ..
   - make
   - ctest .
