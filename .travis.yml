@@ -20,7 +20,7 @@ install:
   - sudo mv libgtest* /usr/lib/
   - cd $TRAVIS_BUILD_DIR
   - git clone https://github.com/Microsoft/GSL.git
-  - export GSL_PATH=$PWD/gsl/include
+  - export GSL_PATH=$CWD/gsl/include
 
 script:
   - mkdir build
