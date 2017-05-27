@@ -20,7 +20,7 @@ install:
   - sudo mv libgtest* /usr/lib/
   - cd $TRAVIS_BUILD_DIR
   - git clone https://github.com/viboes/GSL.git
-  - export GSL_PATH=$PWD/GSL/include
+  - export GSL_PATH=$PWD/GSL
 
 script:
   - mkdir build
