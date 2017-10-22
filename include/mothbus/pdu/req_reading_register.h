@@ -14,10 +14,11 @@ namespace mothbus
 
 
 		template <class Reader>
-		void read(Reader& reader, read_holding_pdu_req& req)
+		error_code read(Reader& reader, read_holding_pdu_req& req)
 		{
-			reader.get(req.starting_address);
-			reader.get(req.quantity_of_registers);
+			MOTH_CHECKED_RETURN(read(reader, req.starting_address));
+			MOTH_CHECKED_RETURN(read(reader, req.quantity_of_registers));
+			return{};
 		}
 
 

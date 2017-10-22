@@ -50,7 +50,7 @@ TEST(tcp, testStream)
 {
 	Sync_Stream stream;
 	stream.in = {0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0xff, 0x03, 0x02, 0x02, 0x2B};
-	mothbus::tcp_slave<Sync_Stream> client(stream);
+	mothbus::tcp_master<Sync_Stream> client(stream);
 	std::array<mothbus::byte, 2> singleRegister;
 	client.read_registers(255, 1, singleRegister);
 	ASSERT_EQ(0x02, gsl::to_integer<int>(singleRegister[0]));

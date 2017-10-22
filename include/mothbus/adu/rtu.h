@@ -2,7 +2,7 @@
 #include <mothbus/mothbus.h>
 #include <mothbus/pdu.h>
 #include <mothbus/adu/buffer.h>
-#include <mothbus/adu/slave.h>
+#include <mothbus/adu/master.h>
 
 #include "crc.h"
 
@@ -69,6 +69,6 @@ namespace mothbus
 	}
 
 	template<class Stream>
-	using rtu_slave = adu::slave_base<rtu::stream<Stream>>;
+	using rtu_master = adu::master_base<rtu::stream<Stream>>;
 
 }

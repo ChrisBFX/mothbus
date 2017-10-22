@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 	}
 
 	if (vm.count("host"))
-		std::string host = vm["host"].as<std::string>();
+		host = vm["host"].as<std::string>();
 
 	using boost::asio::ip::tcp;
 	boost::asio::io_service io_service;
@@ -56,14 +56,17 @@ int main(int argc, char** argv)
 	tcp::socket socket(io_service);
 	boost::asio::connect(socket, endpoint_iterator);
 
-	mothbus::tcp_slave<tcp::socket> client(socket);
+	mothbus::tcp_master<tcp::socket> client(socket);
 	std::array<mothbus::byte, 2> singleRegister;
-	client.read_registers(slave, register_address, singleRegister);
+	auto ec = client.read_registers(slave, register_address, singleRegister);
 
 	std::cout << "Host: " << host << ":" << port << "\n";
 	std::cout << "register address: " << register_address << " amount: " << 2 << "\n";
 	std::cout << "---------------\n";
-	std::cout << "    value: " << singleRegister << "\n";
+	if (!ec)
+		std::cout << "    value: " << singleRegister << "\n";
+	else
+		std::cout << "error: " << ec.message() << "\n";
 	
 	return 0;
 }

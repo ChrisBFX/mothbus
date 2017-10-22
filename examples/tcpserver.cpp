@@ -14,8 +14,8 @@ struct req_handler
 	void operator()(mothbus::pdu::not_implemented& req)
 	{
 		mothbus::pdu::pdu_exception_resp resp;
-		resp.function_code = mothbus::pdu::function_code::read_holding_registers;
-		resp.exceptionCode = mothbus::pdu::modbus_exception_code::illegal_function;
+		resp.fc = mothbus::pdu::function_code::read_holding_registers;
+		resp.exceptionCode = mothbus::modbus_exception_code::illegal_function;
 		stream.write_response(transactionId, slave, resp);
 	}
 
@@ -27,8 +27,8 @@ struct req_handler
 		if (slave != 255)
 		{
 			mothbus::pdu::pdu_exception_resp resp;
-			resp.function_code = mothbus::pdu::function_code::read_holding_registers;
-			resp.exceptionCode = mothbus::pdu::modbus_exception_code::gateway_path_unavailable;
+			resp.fc = mothbus::pdu::function_code::read_holding_registers;
+			resp.exceptionCode = mothbus::modbus_exception_code::gateway_path_unavailable;
 			stream.write_response(transactionId, slave, resp);
 			return;
 		}
@@ -40,8 +40,8 @@ struct req_handler
 			return;
 		}
 		mothbus::pdu::pdu_exception_resp resp;
-		resp.function_code = mothbus::pdu::function_code::read_holding_registers;
-		resp.exceptionCode = mothbus::pdu::modbus_exception_code::illegal_data_address;
+		resp.fc = mothbus::pdu::function_code::read_holding_registers;
+		resp.exceptionCode = mothbus::modbus_exception_code::illegal_data_address;
 		stream.write_response(transactionId, slave, resp);
 	}
 };

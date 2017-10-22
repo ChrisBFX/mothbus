@@ -20,17 +20,16 @@ namespace mothbus
 		};
 
 
-		template <class reader_t>//, std::ptrdiff_t Extent>
-		void read(reader_t& reader, read_holding_pdu_resp& resp)
+		template <class Reader>//, std::ptrdiff_t Extent>
+		error_code read(Reader& reader, read_holding_pdu_resp& resp)
 		{
-			reader.get(resp.byte_count);
+			MOTH_CHECKED_RETURN(read(reader, resp.byte_count));
 			if (resp.byte_count > resp.values.size())
-			{
-				throw std::runtime_error("More bytes received");
-			}
+				return make_error_code(modbus_exception_code::to_many_bytes_received);
 			if (resp.byte_count < resp.values.size())
 				resp.values = resp.values.subspan(0, resp.byte_count);
-			reader.get(resp.values);
+			MOTH_CHECKED_RETURN(read(reader, resp.values));
+			return{};
 		}
 
 		template <class Writer>//, std::ptrdiff_t Extent>

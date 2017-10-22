@@ -24,7 +24,7 @@ set(GSL_INCLUDE_DIRS "C:\\program files\\GSL\\include" CACHE PATH "Path to core 
 
 include_directories(include ${Boost_INCLUDE_DIRS} ${GSL_INCLUDE_DIRS})
 
-add_library(mothbus INTERFACE)
+add_library(mothbus STATIC ${PROJ_INCLUDES} ${PROJ_SRC})
 target_include_directories(mothbus INTERFACE 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)

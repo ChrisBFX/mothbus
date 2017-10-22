@@ -3,7 +3,7 @@
 #include <mothbus/pdu.h>
 #include <boost/asio.hpp>
 #include <mothbus/adu/buffer.h>
-#include "slave.h"
+#include "master.h"
 
 namespace mothbus
 {
@@ -42,7 +42,7 @@ namespace mothbus
 			}
 
 			template <class Resp>
-			void read_response(uint16_t expected_rransaction_id, uint8_t expected_slave, Resp& out)
+			error_code read_response(uint16_t expected_rransaction_id, uint8_t expected_slave, Resp& out)
 			{
 				adu::buffer source(_message_buffer);
 				size_t read_size = 0;
@@ -53,22 +53,23 @@ namespace mothbus
 				uint16_t protocol = 0;
 				uint16_t length = 0;
 				uint8_t received_slave = 0;
-				pdu::read(reader, received_transaction_id);
-				pdu::read(reader, protocol);
-				pdu::read(reader, length);
-				pdu::read(reader, received_slave);
+				MOTH_CHECKED_RETURN(read(reader, received_transaction_id));
+				MOTH_CHECKED_RETURN(read(reader, protocol));
+				MOTH_CHECKED_RETURN(read(reader, length));
+				MOTH_CHECKED_RETURN(read(reader, received_slave));
 				if (received_transaction_id != expected_rransaction_id)
-					throw modbus_exception(10);
+					return make_error_code(modbus_exception_code::transaction_id_invalid);
 				if (protocol != _protocol)
-					throw modbus_exception(10);
+					return make_error_code(modbus_exception_code::illegal_protocol);
 				if (received_slave != expected_slave)
-					throw modbus_exception(10);
+					return make_error_code(modbus_exception_code::slave_id_invalid);
 				if (length + 6 > 255 || length <= 1)
-					throw modbus_exception(10);
+					return make_error_code(modbus_exception_code::invalid_response);
 				read_size = mothbus::read(_next_layer, source.prepare(length - 1));
 				source.commit(read_size);
 				pdu::pdu_resp<Resp> combined_response{out};
-				pdu::read(reader, combined_response);
+				MOTH_CHECKED_RETURN(read(reader, combined_response));
+				return{};
 			}
 
 
@@ -96,17 +97,22 @@ namespace mothbus
 				{
 					source.commit(size);
 					pdu::reader<adu::buffer> reader(source);
-					pdu::read(reader, transaction_id);
-					pdu::read(reader, protocol);
-					pdu::read(reader, length);
-					pdu::read(reader, slave);
+					read(reader, transaction_id);
+					read(reader, protocol);
+					read(reader, length);
+					read(reader, slave);
 					if (length + 6 > 255 || length <= 1)
 					{
-						callback(0, 0, boost::system::error_code(boost::system::errc::bad_message, boost::system::errno_ecat));
+						callback(0, 0, make_error_code(modbus_exception_code::request_to_big));
 						return;
 					}
-					mothbus::async_read(next_layer, source.prepare(length - 1), [op = std::move(*this)](const boost::system::error_code& ec, size_t read_size) mutable
+					mothbus::async_read(next_layer, source.prepare(length - 1), [op = std::move(*this)](auto ec, size_t read_size) mutable
 					{
+						if (!!ec)
+						{
+							op.callback(0, 0, ec);
+							return;
+						}
 						op.parse_body(read_size);
 					});
 				}
@@ -115,8 +121,8 @@ namespace mothbus
 				{
 					source.commit(size);
 					pdu::reader<adu::buffer> reader(source);
-					pdu::read(reader, request);
-					callback(transaction_id, slave, boost::system::error_code(boost::system::errc::success, boost::system::errno_ecat));
+					auto ec = read(reader, request);
+					callback(transaction_id, slave, ec);
 				}
 			};
 
@@ -125,7 +131,7 @@ namespace mothbus
 			void async_read_request(pdu::pdu_req& request, Callback&& callback)
 			{
 				request_read_op<Callback> op(_next_layer, _message_buffer, request, std::forward<Callback>(callback));
-				mothbus::async_read(_next_layer, op.source.prepare(7), [op = std::move(op)](boost::system::error_code ec, size_t read_size) mutable
+				mothbus::async_read(_next_layer, op.source.prepare(7), [op = std::move(op)](auto ec, size_t read_size) mutable
 				{
 					if (!!ec)
 					{
@@ -166,5 +172,5 @@ namespace mothbus
 	}
 
 	template<class Stream>
-	using tcp_slave = adu::slave_base<tcp::stream<Stream>>;
+	using tcp_master = adu::master_base<tcp::stream<Stream>>;
 }

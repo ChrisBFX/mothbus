@@ -1,13 +1,16 @@
 #pragma once
 #include <mothbus/mothbus.h>
 #include <cstdint>
+#include <mothbus/error.h>
 
 namespace mothbus
 {
 	namespace pdu
 	{
+#define MOTH_CHECKED_RETURN(expr) { auto ec = expr; if (!!ec) return ec; }
+
 		template <class Reader, class C>
-		void read(Reader& reader, C& v);
+		error_code read(Reader& reader, C& v);
 
 		template <class Writer, class C>
 		void write(Writer& writer, const C& v);
@@ -71,15 +74,34 @@ namespace mothbus
 		};
 
 		template <class Reader>
-		void read(Reader& reader, uint8_t& v)
+		error_code read(Reader& reader, uint8_t& v)
 		{
 			reader.get(v);
+			return{};
 		}
 
 		template <class Reader>
-		void read(Reader& reader, uint16_t& v)
+		error_code read(Reader& reader, uint16_t& v)
 		{
-			reader.get(v);
+			uint8_t b = 0;
+			MOTH_CHECKED_RETURN(read(reader, b));
+			v = b << 8;
+			MOTH_CHECKED_RETURN(read(reader, b));
+			v |= b;
+			return{};
+		}
+
+
+		template <class Reader>
+		error_code read(Reader& reader, span<byte>& v)
+		{
+			for (auto& byte : v)
+			{
+				uint8_t temp = 0;
+				MOTH_CHECKED_RETURN(read(reader, temp));
+				byte = gsl::to_byte(temp);
+			}
+			return{};
 		}
 
 		template <class Writer>
@@ -115,11 +137,12 @@ namespace mothbus
 		};
 
 		template <class Reader>
-		void read(Reader& reader, function_code& v)
+		error_code read(Reader& reader, function_code& v)
 		{
 			uint8_t h;
-			reader.get(h);
+			MOTH_CHECKED_RETURN(read(reader, h));
 			v = static_cast<function_code>(h);
+			return{};
 		}
 
 		class read_holding_pdu_req;
@@ -145,41 +168,40 @@ namespace mothbus
 		namespace detail
 		{
 			template <class Head, class ...Tail, class Reader>
-			typename std::enable_if<std::is_same<Head, not_implemented>::value, void>::type
+			typename std::enable_if<std::is_same<Head, not_implemented>::value, error_code>::type
 				read_pdu_variant(Reader& reader, pdu_req& resp, function_code functionCode)
 			{
-				//throw modbus_exception(-1);
+				resp = not_implemented{};
+				return make_error_code(modbus_exception_code::illegal_function);
 			}
 
 			template <class Head, class ...Tail, class Reader>
-			typename std::enable_if<!std::is_same<Head, not_implemented>::value, void>::type
+			typename std::enable_if<!std::is_same<Head, not_implemented>::value, error_code>::type
 				read_pdu_variant(Reader& reader, pdu_req& resp, function_code functionCode)
 			{
 				if (Head::fc == functionCode)
 				{
 					Head real{};
-					read(reader, real);
+					MOTH_CHECKED_RETURN(read(reader, real));
 					resp = real;
+					return{};
 				}
-				else
-				{
-					read_pdu_variant<Tail...>(reader, resp, functionCode);
-				}
+				return read_pdu_variant<Tail...>(reader, resp, functionCode);
 			}
 
 			template <class Reader, class ...t>
-			void read_pdu_req(Reader& reader, variant<t...>& resp, function_code functionCode)
+			error_code read_pdu_req(Reader& reader, variant<t...>& resp, function_code functionCode)
 			{
-				read_pdu_variant<t...>(reader, resp, functionCode);
+				return read_pdu_variant<t...>(reader, resp, functionCode);
 			}
 		}
 
 		template <class Reader>
-		void read(Reader& reader, pdu_req& req)
+		error_code read(Reader& reader, pdu_req& req)
 		{
 			function_code functionCode;
-			read(reader, functionCode);
-			detail::read_pdu_req(reader, req, functionCode);
+			MOTH_CHECKED_RETURN(read(reader, functionCode));
+			return detail::read_pdu_req(reader, req, functionCode);
 		}
 
 		template <class Writer>
@@ -188,25 +210,15 @@ namespace mothbus
 			writer.write(static_cast<uint8_t>(functionCode));
 		}
 
-		enum class modbus_exception_code
-		{
-			illegal_function = 0x01,
-			illegal_data_address = 0x02,
-			illegal_data_value = 0x03,
-			slave_device_failure = 0x04,
-			acknowledge = 0x05,
-			slave_device_busy = 0x06,
-			memory_parity_error = 0x08,
-			gateway_path_unavailable = 0x0a,
-			gateway_target_device_failed_to_respond = 0x0b
-		};
+
 
 		template <class Reader>
-		void read(Reader& reader, modbus_exception_code& v)
+		error_code read(Reader& reader, modbus_exception_code& v)
 		{
 			uint8_t h;
-			reader.get(h);
+			MOTH_CHECKED_RETURN(read(reader, h));
 			v = static_cast<modbus_exception_code>(h);
+			return{};
 		}
 
 		template <class Writer>
@@ -241,22 +253,22 @@ namespace mothbus
 		};
 
 		template <class Reader, class Response>
-		void read(Reader& reader, pdu_resp<Response>& resp)
+		error_code read(Reader& reader, pdu_resp<Response>& resp)
 		{
 			uint8_t fC;
-			reader.get(fC);
+			MOTH_CHECKED_RETURN(read(reader, fC));
 			// 0x80 marks an modbus exception
 			if (fC & 0x80)
 			{
 				pdu_exception_resp exc;
 				exc.fc = static_cast<function_code>(fC & 0x7f);
-				read(reader, exc.exceptionCode);
-				throw modbus_exception(static_cast<int>(exc.exceptionCode));
+				MOTH_CHECKED_RETURN(read(reader, exc.exceptionCode));
+				return make_error_code(exc.exceptionCode);
 			}
 			function_code function_code_value = static_cast<function_code>(fC);
 			if (function_code_value != Response::fc)
-				throw modbus_exception(0x10);
-			read(reader, resp.resp);
+				return make_error_code(modbus_exception_code::invalid_response);
+			return read(reader, resp.resp);
 		}
 	}
 }
