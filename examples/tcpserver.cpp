@@ -5,11 +5,15 @@
 using boost::asio::ip::tcp;
 
 template <class Stream>
-struct req_handler
+struct req_handler : boost::static_visitor<void>
 {
 	mothbus::tcp::stream<Stream>& stream;
 	uint16_t transactionId;
 	uint8_t slave;
+
+	req_handler(mothbus::tcp::stream<Stream>& stream, uint16_t transactionId, uint8_t slave):
+		stream(stream), transactionId(transactionId), slave(slave)
+	{}
 
 	void operator()(mothbus::pdu::not_implemented& req)
 	{
