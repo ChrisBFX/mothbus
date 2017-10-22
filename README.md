@@ -1,5 +1,7 @@
 # mothbus, a c++11 library for the modbus protocol
 
+[![Build Status](https://travis-ci.org/ChrisBFX/mothbus.svg?branch=master)](https://travis-ci.org/ChrisBFX/mothbus)
+
 ## Introduction
 
 The goal of the mothbus library is to provide a complete and simple implementation of the 
