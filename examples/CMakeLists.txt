@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.2)
 
-find_package(Boost 1.63 REQUIRED COMPONENTS system program_options)
+find_package(Boost 1.54 REQUIRED COMPONENTS system program_options)
 
 
 add_executable(mothtcpserver tcpserver.cpp)
