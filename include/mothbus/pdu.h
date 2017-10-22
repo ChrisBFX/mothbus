@@ -162,6 +162,9 @@ namespace mothbus
 			constexpr static function_code fc = FunctionCode;
 		};
 
+		template<function_code FunctionCode>
+		constexpr function_code pdu_base<FunctionCode>::fc;
+
 		using pdu_req = variant<read_holding_pdu_req, not_implemented>;
 
 
