@@ -35,7 +35,7 @@ namespace mothbus
 		template <class Writer>//, std::ptrdiff_t Extent>
 		void write(Writer& writer, const read_holding_pdu_resp& v)
 		{
-			write(writer, v.fc);
+			write(writer, read_holding_pdu_resp::fc);
 			write(writer, v.byte_count);
 			write(writer, v.values);
 		}
