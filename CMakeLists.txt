@@ -30,6 +30,7 @@ target_include_directories(mothbus INTERFACE
     $<INSTALL_INTERFACE:include>)
 target_link_libraries(mothbus INTERFACE ${Boost_LIBRARIES})
 
+enable_testing()
 add_subdirectory(test)
 
 option(Build_Examples OFF "Build examples for mothbus")
