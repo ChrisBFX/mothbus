@@ -44,19 +44,19 @@ namespace mothbus
 			template <class Resp>
 			error_code read_response(uint16_t expected_rransaction_id, uint8_t expected_slave, Resp& out)
 			{
+				using pdu::read;
 				adu::buffer source(_message_buffer);
 				size_t read_size = 0;
 				read_size += mothbus::read(_next_layer, source.prepare(7));
 				source.commit(read_size);
-				pdu::reader<adu::buffer> reader(source);
 				uint16_t received_transaction_id = 0;
 				uint16_t protocol = 0;
 				uint16_t length = 0;
 				uint8_t received_slave = 0;
-				MOTH_CHECKED_RETURN(read(reader, received_transaction_id));
-				MOTH_CHECKED_RETURN(read(reader, protocol));
-				MOTH_CHECKED_RETURN(read(reader, length));
-				MOTH_CHECKED_RETURN(read(reader, received_slave));
+				MOTH_CHECKED_RETURN(read(source, received_transaction_id));
+				MOTH_CHECKED_RETURN(read(source, protocol));
+				MOTH_CHECKED_RETURN(read(source, length));
+				MOTH_CHECKED_RETURN(read(source, received_slave));
 				if (received_transaction_id != expected_rransaction_id)
 					return make_error_code(modbus_exception_code::transaction_id_invalid);
 				if (protocol != _protocol)
@@ -68,7 +68,7 @@ namespace mothbus
 				read_size = mothbus::read(_next_layer, source.prepare(length - 1));
 				source.commit(read_size);
 				pdu::pdu_resp<Resp> combined_response{out};
-				MOTH_CHECKED_RETURN(read(reader, combined_response));
+				MOTH_CHECKED_RETURN(read(source, combined_response));
 				return{};
 			}
 
@@ -95,12 +95,12 @@ namespace mothbus
 
 				void parse_header(size_t size)
 				{
+					using pdu::read;
 					source.commit(size);
-					pdu::reader<adu::buffer> reader(source);
-					read(reader, transaction_id);
-					read(reader, protocol);
-					read(reader, length);
-					read(reader, slave);
+					read(source, transaction_id);
+					read(source, protocol);
+					read(source, length);
+					read(source, slave);
 					if (length + 6 > 255 || length <= 1)
 					{
 						callback(0, 0, make_error_code(modbus_exception_code::request_to_big));
@@ -119,9 +119,9 @@ namespace mothbus
 
 				void parse_body(size_t size)
 				{
+					using pdu::read;
 					source.commit(size);
-					pdu::reader<adu::buffer> reader(source);
-					auto ec = read(reader, request);
+					auto ec = read(source, request);
 					callback(transaction_id, slave, ec);
 				}
 			};

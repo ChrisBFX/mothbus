@@ -27,7 +27,7 @@ unaddressed issues and internal inconsistencies.
 ## Requirements
 
 * C++11, propably some C++14 features required
-* gsl (tested with https://github.com/Microsoft/GSL)
+* gsl (tested with https://github.com/viboes/GSL)
 * boost (asio, system (program_options for examples))
 * google-test for unit tests
 
@@ -47,17 +47,20 @@ Reading a register from a modbus tcp device:
 
 int main(int argc, char** argv)
 {	
+	// network code
 	using boost::asio::ip::tcp;
 	std::string host = "localhost";	
 	boost::asio::io_service io_service;
 	tcp::resolver resolver(io_service);
 	tcp::socket socket(io_service);
-	boost::asio::connect(socket, esolver.resolve(tcp::resolver::query{host, "502"}));
+	boost::asio::connect(socket, resolver.resolve(tcp::resolver::query{host, "502"}));
 
-	mothbus::tcp_slave<tcp::socket> client(socket);
+	// mothbus reads from server
+	mothbus::tcp_master<tcp::socket> client(socket);
 	std::array<mothbus::byte, 2> singleRegister;
 	client.read_registers(slave, register_address, singleRegister);
 	
+	// output value
 	uint16_t value = (gsl::to_integer<uin16_t>(singleRegister[0]) << 8) + gsl::to_integer<uin16_t>(singleRegister[0]);
 	std::cout << value;	
 	return 0;

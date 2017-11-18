@@ -40,39 +40,6 @@ namespace mothbus
 			Sink& _sink;
 		};
 
-		template <class Source>
-		class reader
-		{
-		public:
-			reader(Source& source)
-				: _source(source)
-			{
-			};
-
-			//template<std::ptrdiff_t Extent>
-			inline void get(span<byte>& v)
-			{
-				for (auto& byte : v)
-				{
-					byte = gsl::to_byte(_source.get());
-				}
-			}
-
-			inline void get(uint16_t& v)
-			{
-				v = _source.get() << 8;
-				v |= _source.get();
-			}
-
-			inline void get(uint8_t& v)
-			{
-				v = _source.get();
-			}
-
-		private:
-			Source& _source;
-		};
-
 		template <class Reader>
 		error_code read(Reader& reader, uint8_t& v)
 		{

@@ -4,42 +4,49 @@
 
 using namespace mothbus;
 
-class vector_source
-{
-public:
-	vector_source(std::vector<uint8_t> values)
-		: _values(std::move(values)),
-		  _current(_values.begin())
+namespace {
+	class vector_source
 	{
+	public:
+		vector_source(std::vector<uint8_t> values)
+			: _values(std::move(values)),
+			_current(_values.begin())
+		{
+		}
+
+		uint8_t get()
+		{
+			return *_current++;
+		}
+
+		std::vector<uint8_t> _values;
+		std::vector<uint8_t>::iterator _current;
+	};
+
+	inline error_code read(vector_source& in, uint8_t& out)
+	{
+		out = in.get();
+		return{};
 	}
 
-	uint8_t get()
+	class vector_sink
 	{
-		return *_current++;
-	}
+	public:
+		void put(uint8_t v)
+		{
+			values.push_back(v);
+		}
 
-	std::vector<uint8_t> _values;
-	std::vector<uint8_t>::iterator _current;
-};
+		std::vector<uint8_t> values;
+	};
 
-class vector_sink
-{
-public:
-	void put(uint8_t v)
-	{
-		values.push_back(v);
-	}
-
-	std::vector<uint8_t> values;
-};
-
+}
 
 TEST(pdu_req, canReadHoldingRegister)
 {
 	vector_source in({0x03, 0x00, 0x6b, 0x00, 0x03});
-	pdu::reader<vector_source> reader(in);
 	pdu::pdu_req req;
-	pdu::read(reader, req);
+	pdu::read(in, req);
 	pdu::read_holding_pdu_req realReq = boost::get<pdu::read_holding_pdu_req>(req);
 	ASSERT_EQ(107, realReq.starting_address);
 	ASSERT_EQ(3, realReq.quantity_of_registers);
@@ -61,11 +68,10 @@ TEST(pdu_req, canWriteHoldingRegister)
 TEST(pdu_resp, canReadHoldingRegister)
 {
 	vector_source in({0x03, 0x06, 0x02, 0x2B, 0x00, 0x00, 0x00, 0x04});
-	pdu::reader<vector_source> reader(in);
 	std::array<byte, 6> buffer;
 	pdu::read_holding_pdu_resp resp(buffer);
 	pdu::pdu_resp<pdu::read_holding_pdu_resp> combinedResponse{resp};
-	pdu::read(reader, combinedResponse);
+	pdu::read(in, combinedResponse);
 	ASSERT_EQ(6, resp.byte_count);
 	ASSERT_EQ(0x02, gsl::to_integer<int>(resp.values[0]));
 	ASSERT_EQ(0x2B, gsl::to_integer<int>(resp.values[1]));

@@ -21,9 +21,13 @@ namespace mothbus
 				message_buffer[output_start++] = v;
 			}
 
-			uint8_t get()
+			error_code get(uint8_t& out)
 			{
-				return message_buffer[input_start++];
+				if (input_start >= input_end)
+					return make_error_code(modbus_exception_code::to_many_bytes_received);
+				out = message_buffer[input_start];
+				input_start++;
+				return{};
 			}
 
 			boost::asio::const_buffers_1 data()
@@ -51,5 +55,10 @@ namespace mothbus
 			size_t input_end = 0;
 			size_t output_start = 0;
 		};
+
+		inline error_code read(buffer& in, uint8_t& out)
+		{
+			return in.get(out);
+		}
 	}
 }
